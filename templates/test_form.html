@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Expression Prediction</title>
+</head>
+<body>
+    <h1>Upload an Image for Face Expression Prediction</h1>
+    <form action="http://127.0.0.1:5000/predict" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" required />
+        <button type="submit">Upload Image</button>
+    </form>
+
+    <h2>Prediction Result</h2>
+    <div id="result"></div>
+
+    <script>
+        // Handle the response after form submission
+        const form = document.querySelector('form');
+        form.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent the form from submitting normally
+
+            const formData = new FormData(form);
+            try {
+                console.log("Sending request..."); 
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                console.log(result);
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <strong>Predicted Emotion:</strong> ${result.predicted_emotion}<br>
+                        <strong>Confidence Scores:</strong><br>
+                        ${result.confidence_scores.map((score, index) => {
+                            return `<p>${index}: ${score.toFixed(4)}</p>`;
+                        }).join('')}
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <strong>Error:</strong> ${result.error || 'Something went wrong!'}
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <strong>Error:</strong> ${error.message}
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
